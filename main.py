@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-# Money Flow Manager by CISCer Beta for Windows v0.1.2
+# Money Flow Manager by CISCer Beta for Linux (BFL) v0.1.2
 import csv
 import os
 import datetime
 
 
 def Clear():
-    print('\n'*100)
-
+    os.system("clear")
+Clear()
 
 # Colours
 yellow, blue, green, mc, red = "\033[33m", "\033[34m", "\033[32m", "\033[0m", "\033[31m"  # mc - clean colours
@@ -31,10 +31,10 @@ def DateTime():
 
 
 time_now = DateTime()
+print(blue, 'Money Flow Program v0.1.2 Beta\nby CISCer', mc)
 
 
 def MainFun():
-    print(blue, 'Money Flow Program v0.1.2 Beta\nby CISCer', mc)
     file_data_base = ".data.dat"
     check_file_data_base = os.path.exists(file_data_base)
     # Reader
@@ -44,7 +44,7 @@ def MainFun():
             with open(file_data_base, encoding='utf-8') as data:
                 s = 0
                 reader = csv.DictReader(data, delimiter=',')
-                print('\n' + yellow + '--- Все операции ---' + mc)
+                print('\n' + yellow + '--- All operations ---' + mc)
                 for line in reader:
                     s += 1
                     row = (line["date"], line["balance"])
@@ -52,12 +52,13 @@ def MainFun():
         ShowingContent()
 
         while True:
-            print('\n''1 - Посмотреть подробности' '\n' '2 - Добавить операцию')
+            print('\n', green, '1', mc, '- View details''\n', green, '2', mc, '- Add operation')
             change = input('(1/2): ')
             if change == '-x':
+                Clear()
                 quit()
             if change == '1':
-                num = int(input('Номер: '))
+                num = int(input('Number: '))
                 Clear()
                 ShowingContent()
                 with open(file_data_base, encoding='utf-8') as profiles:
@@ -83,12 +84,12 @@ def MainFun():
                                 cl_b = green
                             elif int(line["balance"]) < 0:
                                 cl_b = red
-                            print('\n', 'На момент', yellow, line["date"], mc,
-                                  'на счету', cl_b, line["balance"], mc, '₽', '\n\n',
-                                  'Доход составил', cl_i, line["income"], mc, '₽', '\n',
-                                  'Примечание к доходу:', yellow, line["note_income"], mc, '\n\n',
-                                  'Расход составил', cl_c, line["consumption"], '₽', mc, '\n',
-                                  'Примечание к расходу:', yellow, line["note_consumption"], '\n', mc)
+                            print('\n', 'At the moment', yellow, line["date"], mc,
+                                  'on account', cl_b, line["balance"], mc, '₽', '\n\n',
+                                  'The income was', cl_i, line["income"], mc, '₽', '\n',
+                                  'Note to income:', yellow, line["note_income"], mc, '\n\n',
+                                  'The consumption was', cl_c, line["consumption"], '₽', mc, '\n',
+                                  'Note to consumption:', yellow, line["note_consumption"], '\n', mc)
 
             elif change == '2':
                 with open(file_data_base, 'a', encoding='utf-8') as data:
@@ -96,10 +97,10 @@ def MainFun():
                     fieldnames = ['balance', 'income', 'consumption', 'date', 'note_income', 'note_consumption']
                     writer = csv.DictWriter(data, fieldnames=fieldnames)
 
-                    income = int(input('Доход: '))
-                    note_income = input('Примечание к доходу: ')
+                    income = int(input('Income: '))
+                    note_income = input('Note to income: ')
                     consumption = int(input('Расход: '))
-                    note_consumption = input('Примечание к расходу: ')
+                    note_consumption = input('Consumption note: ')
                     balance = int(line["balance"]) + int(income) - int(consumption)
 
                     writer.writerow({'balance': balance,
@@ -123,9 +124,8 @@ def MainFun():
 
 
 if __name__ == '__main__':
-    MainFun()
-# try:
-#     MainFun()
-# except ValueError:
-#     print('Спасибо, хорошего дня')
-#     MainFun()
+    try:
+        MainFun()
+    except ValueError:
+        print('-- #202 Error --')
+        MainFun()
