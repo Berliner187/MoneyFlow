@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-# Money Flow Manager by CISCer Beta for Linux (BFL) v0.1.2
+# Money Flow Manager by CISCer Beta for Linux v0.1.3
 import csv
 import os
 import datetime
+import time
 
 
 def Clear():
     os.system("clear")
-Clear()
+
 
 # Colours
 yellow, blue, green, mc, red = "\033[33m", "\033[34m", "\033[32m", "\033[0m", "\033[31m"  # mc - clean colours
@@ -31,7 +32,6 @@ def DateTime():
 
 
 time_now = DateTime()
-print(blue, 'Money Flow Program v0.1.2 Beta\nby CISCer', mc)
 
 
 def MainFun():
@@ -44,7 +44,7 @@ def MainFun():
             with open(file_data_base, encoding='utf-8') as data:
                 s = 0
                 reader = csv.DictReader(data, delimiter=',')
-                print('\n' + yellow + '--- All operations ---' + mc)
+                print('\n' + yellow + '--- Все операции ---' + mc)
                 for line in reader:
                     s += 1
                     row = (line["date"], line["balance"])
@@ -52,10 +52,13 @@ def MainFun():
         ShowingContent()
 
         while True:
-            print('\n', green, '1', mc, '- View details''\n', green, '2', mc, '- Add operation')
+            print('\n', green,
+                  '1', mc, '- View details''\n', green,
+                  '2', mc, '- Add operation')
             change = input('(1/2): ')
             if change == '-x':
                 Clear()
+                print('10Q, have a good day')
                 quit()
             if change == '1':
                 num = int(input('Number: '))
@@ -97,11 +100,15 @@ def MainFun():
                     fieldnames = ['balance', 'income', 'consumption', 'date', 'note_income', 'note_consumption']
                     writer = csv.DictWriter(data, fieldnames=fieldnames)
 
-                    income = int(input('Income: '))
-                    note_income = input('Note to income: ')
+                    income = int(input('Доход: '))
+                    note_income = input('Примечание к доходу: ')
                     consumption = int(input('Расход: '))
-                    note_consumption = input('Consumption note: ')
-                    balance = int(line["balance"]) + int(income) - int(consumption)
+                    note_consumption = input('Примечание к расходу: ')
+                    with open(file_data_base, encoding='utf-8') as read_data:
+                        reading_lines = csv.DictReader(read_data, delimiter=',')
+                        for row in reading_lines:
+                            last_balance = int(row["balance"])
+                    balance = last_balance + int(income) - int(consumption)
 
                     writer.writerow({'balance': balance,
                                      'income': income,
@@ -110,7 +117,7 @@ def MainFun():
                                      'note_income': note_income,
                                      'note_consumption': note_consumption})
     # Запись
-    if check_file_data_base == False:
+    elif check_file_data_base == False:
         with open(file_data_base, mode="a", encoding='utf-8') as data:
             date = time_now
             fieldnames = ['balance', 'income', 'consumption', 'date', 'note_income', 'note_consumption']
@@ -124,8 +131,13 @@ def MainFun():
 
 
 if __name__ == '__main__':
+    Clear()
+    print(blue, 'Money Flow Program v0.1.3 Beta\nby CISCer', mc)
+    time.sleep(1)
+    Clear()
     try:
         MainFun()
     except ValueError:
-        print('-- #202 Error --')
+        print('10Q, have a good day')
+        time.sleep(2)
         MainFun()
