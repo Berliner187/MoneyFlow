@@ -6,7 +6,7 @@ import datetime
 import time
 
 
-def Clear():
+def ClearTerminal():
     os.system("clear")
 
 
@@ -33,22 +33,26 @@ def DateTime():
 
 time_now = DateTime()
 
+file_data_base = ".data.dat"
+check_file_data_base = os.path.exists(file_data_base)
+
+
+def ShowingContent():
+    ClearTerminal()
+    with open(file_data_base, encoding='utf-8') as data_from_file:
+        s = 0
+        reader = csv.DictReader(data_from_file, delimiter=',')
+        print('\n' + yellow + '--- Все операции ---' + mc)
+        for line in reader:
+            s += 1
+            row = (line["date"], line["balance"])
+            print(str(s) + '. ' + ' --> '.join(row))
+
 
 def MainFun():
-    file_data_base = ".data.dat"
-    check_file_data_base = os.path.exists(file_data_base)
     # Reader
-    if check_file_data_base == True:
+    if check_file_data_base == bool(True):
         # Если файл уже создан, выводтся содержимое и дальнейшее взаимодействие с программой происходит тут
-        def ShowingContent():
-            with open(file_data_base, encoding='utf-8') as data:
-                s = 0
-                reader = csv.DictReader(data, delimiter=',')
-                print('\n' + yellow + '--- Все операции ---' + mc)
-                for line in reader:
-                    s += 1
-                    row = (line["date"], line["balance"])
-                    print(str(s) + '. ' + ' --> '.join(row))
         ShowingContent()
 
         while True:
@@ -57,12 +61,12 @@ def MainFun():
                   '2', mc, '- Add operation')
             change = input('(1/2): ')
             if change == '-x':
-                Clear()
+                ClearTerminal()
                 print('10Q, have a good day')
                 quit()
             if change == '1':
                 num = int(input('Number: '))
-                Clear()
+                ClearTerminal()
                 ShowingContent()
                 with open(file_data_base, encoding='utf-8') as profiles:
                     reader = csv.DictReader(profiles, delimiter=',')
@@ -100,24 +104,32 @@ def MainFun():
                     fieldnames = ['balance', 'income', 'consumption', 'date', 'note_income', 'note_consumption']
                     writer = csv.DictWriter(data, fieldnames=fieldnames)
 
-                    income = int(input('Доход: '))
-                    note_income = input('Примечание к доходу: ')
-                    consumption = int(input('Расход: '))
-                    note_consumption = input('Примечание к расходу: ')
-                    with open(file_data_base, encoding='utf-8') as read_data:
-                        reading_lines = csv.DictReader(read_data, delimiter=',')
-                        for row in reading_lines:
-                            last_balance = int(row["balance"])
-                    balance = last_balance + int(income) - int(consumption)
+                    def SaveData(income, note_income, consumption, note_consumption):
+                        with open(file_data_base, encoding='utf-8') as read_data:
+                            reading_lines = csv.DictReader(read_data, delimiter=',')
+                            for row in reading_lines:
+                                last_balance = int(row["balance"])
+                        balance = last_balance + int(income) - int(consumption)
+                        writer.writerow({'balance': balance,
+                                         'income': income,
+                                         'consumption': consumption,
+                                         'date': date,
+                                         'note_income': note_income,
+                                         'note_consumption': note_consumption})
 
-                    writer.writerow({'balance': balance,
-                                     'income': income,
-                                     'consumption': consumption,
-                                     'date': date,
-                                     'note_income': note_income,
-                                     'note_consumption': note_consumption})
+                    print(green + '\n Income/Consumption - ?' + mc)
+                    change_income_or_consumption = input(' (1/2): ')
+                    if change_income_or_consumption == '1':
+                        income = int(input(' Income: '))
+                        note_income = input(' Note to income: ')
+                        SaveData(income, note_income, 0, '-')
+                    elif change_income_or_consumption == '2':
+                        consumption = int(input('Consumption: '))
+                        note_consumption = input('Note to consumption: ')
+                        SaveData(0, '-', consumption, note_consumption)
+                ShowingContent()
     # Запись
-    elif check_file_data_base == False:
+    elif check_file_data_base == bool(False):
         with open(file_data_base, mode="a", encoding='utf-8') as data:
             date = time_now
             fieldnames = ['balance', 'income', 'consumption', 'date', 'note_income', 'note_consumption']
@@ -131,13 +143,13 @@ def MainFun():
 
 
 if __name__ == '__main__':
-    Clear()
+    ClearTerminal()
     print(blue, 'Money Flow Program v0.1.3 Beta\nby CISCer', mc)
     time.sleep(1)
-    Clear()
+    ClearTerminal()
     try:
         MainFun()
     except ValueError:
-        print('10Q, have a good day')
+        print('#Error')
         time.sleep(2)
         MainFun()
