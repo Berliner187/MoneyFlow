@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Money Flow Manager by CISCer Beta for Linux v0.1.3
+# Money Flow Manager by CISCer Beta for Linux v0.1.4
 import csv
 import os
 import datetime
@@ -27,14 +27,19 @@ def DateTime():
     if second < 10:
         second = str(0) + str(second)
     time_format = (str(hour), str(minute), str(second))
-    time_now = ":".join(time_format) + ' ' + str(date_format)
-    return time_now
+    time_now = ":".join(time_format)
+    date_now = str(date_format)
+    return time_now, date_now
 
 
-time_now = DateTime()
+date_now, time_now = DateTime()
 
 file_data_base = ".data.dat"
 check_file_data_base = os.path.exists(file_data_base)
+
+
+def Field():
+    return ['balance', 'income', 'consumption', 'date', 'time', 'note_income', 'note_consumption', 'category']
 
 
 def ShowingContent():
@@ -42,11 +47,39 @@ def ShowingContent():
     with open(file_data_base, encoding='utf-8') as data_from_file:
         s = 0
         reader = csv.DictReader(data_from_file, delimiter=',')
-        print('\n' + yellow + '--- Все операции ---' + mc)
+        row_date_and_time = ("    Date", "Time", "Balance")
+        print(yellow + '\n --- Все операции --- \n\n' + mc,
+              "   >>>>  ".join(row_date_and_time))
         for line in reader:
             s += 1
-            row = (line["date"], line["balance"])
-            print(str(s) + '. ' + ' --> '.join(row))
+            row = (line["date"], line["time"], line["balance"])
+            if s < 10:
+                print('0' + str(s) + '. ' + ' --> '.join(row))
+            else:
+                print(str(s) + '. ' + ' --> '.join(row))
+            if s == 20:
+                break
+
+
+def SaveDataToFile(balance, income, consumption, date_now, time_now, note_income, note_consumption):
+    with open(file_data_base, encoding='utf-8') as read_data:
+        reading_lines = csv.DictReader(read_data, delimiter=',')
+        for row in reading_lines:
+            last_balance = int(row["balance"])
+    if check_file_data_base == bool(True):
+        balance = last_balance + int(income) - int(consumption)
+
+    with open(file_data_base, 'a', encoding='utf-8') as data:
+        writer = csv.DictWriter(data, fieldnames=Field())
+        if check_file_data_base == bool(False):
+            writer.writeheader()
+        writer.writerow({'balance': balance,
+                         'income': income,
+                         'consumption': consumption,
+                         'date': date_now,
+                         'time': time_now,
+                         'note_income': note_income,
+                         'note_consumption': note_consumption})
 
 
 def MainFun():
@@ -99,53 +132,32 @@ def MainFun():
                                   'Note to consumption:', yellow, line["note_consumption"], '\n', mc)
 
             elif change == '2':
-                with open(file_data_base, 'a', encoding='utf-8') as data:
-                    date = time_now
-                    fieldnames = ['balance', 'income', 'consumption', 'date', 'note_income', 'note_consumption']
-                    writer = csv.DictWriter(data, fieldnames=fieldnames)
 
-                    def SaveData(income, note_income, consumption, note_consumption):
-                        with open(file_data_base, encoding='utf-8') as read_data:
-                            reading_lines = csv.DictReader(read_data, delimiter=',')
-                            for row in reading_lines:
-                                last_balance = int(row["balance"])
-                        balance = last_balance + int(income) - int(consumption)
-                        writer.writerow({'balance': balance,
-                                         'income': income,
-                                         'consumption': consumption,
-                                         'date': date,
-                                         'note_income': note_income,
-                                         'note_consumption': note_consumption})
-
-                    print(green + '\n Income/Consumption - ?' + mc)
-                    change_income_or_consumption = input(' (1/2): ')
-                    if change_income_or_consumption == '1':
-                        income = int(input(' Income: '))
-                        note_income = input(' Note to income: ')
-                        SaveData(income, note_income, 0, '-')
-                    elif change_income_or_consumption == '2':
-                        consumption = int(input('Consumption: '))
-                        note_consumption = input('Note to consumption: ')
-                        SaveData(0, '-', consumption, note_consumption)
+                print(green + '\n Income/Consumption - ?' + mc)
+                change_income_or_consumption = input(' (1/2): ')
+                if change_income_or_consumption == '1':
+                    income = int(input(' Income: '))
+                    note_income = input(' Note to income: ')
+                    SaveDataToFile(0, income, 0, date_now, time_now, note_income, '')
+                elif change_income_or_consumption == '2':
+                    consumption = int(input('Consumption: '))
+                    note_consumption = input('Note to consumption: ')
+                    SaveDataToFile(0, 0, consumption, date_now, time_now, '', note_consumption)
                 ShowingContent()
     # Запись
     elif check_file_data_base == bool(False):
         with open(file_data_base, mode="a", encoding='utf-8') as data:
-            date = time_now
-            fieldnames = ['balance', 'income', 'consumption', 'date', 'note_income', 'note_consumption']
-            writer = csv.DictWriter(data, fieldnames=fieldnames)
-            writer.writeheader()
+            data.close()
+            os.system("chmod +x main.py")
 
             balance = int(input('Balance: '))
-
-            writer.writerow({'balance': balance, 'income': 0, 'consumption': 0, 'date': date})
-        MainFun()
+            SaveDataToFile(balance, 0, 0, date_now, time_now, '', '')
+        os.system('./main.py')
 
 
 if __name__ == '__main__':
     ClearTerminal()
-    print(blue, 'Money Flow Program v0.1.3 Beta\nby CISCer', mc)
-    time.sleep(1)
+    print(blue, 'Money Flow Program v0.1.4 Beta \n by CISCer', mc)
     ClearTerminal()
     try:
         MainFun()
